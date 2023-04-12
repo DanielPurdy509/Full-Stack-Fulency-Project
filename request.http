@@ -1,2 +1,36 @@
 ###
-GET http://localhost:3000
+GET http://localhost:3000/
+
+###
+GET http://localhost:3000/api/test
+
+###
+POST http://localhost:3000/api/todo
+Content-Type: application/json
+
+{
+    "task":"Wash Dishes",
+    "start_date":"2023-04-12",
+    "deadline":"2023-04-13"
+}
+
+###
+PATCH http://localhost:3000/api/todo/1
+Content-Type: application/json
+
+{
+    "task":"Change Task"
+}
+
+# ###
+# PUT http://localhost:3000/api/todo/1
+# Content-Type: application/json
+
+# {
+#     "task":"Take Out Trash",
+#     "start_date":"2023-04-12",
+#     "deadline":"2023-04-13"
+# }
+
+###
+DELETE http://localhost:3000/api/todo/2
