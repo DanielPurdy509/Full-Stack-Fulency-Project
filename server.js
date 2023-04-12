@@ -18,12 +18,30 @@ app.get("/", function(req, res) {
     res.send("Hello, world!");
 });
 
-app.get('/api/test', function(req, res) {
+app.get('/api', function(req, res) {
     client.query(`SELECT * FROM todo`, function(err, response) {
         console.log(err ? err : response.rows)
         res.json(response.rows)
     })
 });
+
+app.get('/api/:id', (req,res) => {
+    let id = req.params.id;
+
+    if(isNaN(id)) {
+        res.status(404).send("Enter a valid ID");
+        return;
+    }
+    client.query(`SELECT * FROM todo WHERE id = $1`, [id])
+    .then((result) => {
+        if(result.rows.length == 0) {
+            res.status(404).send("The entry does not exist");
+            return;
+        } else {
+            res.status(200).send(result.rows);
+        }
+    })
+})
 
 app.post('/api/todo',function(req,res){
     client.query(`INSERT INTO todo (task,start_date,deadline) VALUES ($1,$2,$3) RETURNING *`,[
@@ -36,22 +54,22 @@ app.post('/api/todo',function(req,res){
     });
 });
 
-app.patch('/api/todo/:taskID',(res,req) => {
-    let taskId = req.params.id;
+app.patch('/api/todo/:id',(req,res) => {
+    let id = req.params.id;
     let data = req.body;
 
-    if(isNaN(taskId)) {
+    if(isNaN(id)) {
         res.status(404).send("Enter a valid task ID");
         return;
     }
-    client.query(`SELECT * FROM todo WHERE id = $1;`, [taskId])
+    client.query(`SELECT * FROM todo WHERE id = $1;`, [id])
     .then((result) => {
         if (result.rows.length == 0) {
             res.status(404).send("The task you are trying to update is not here");
             return;
         } else {
-            const query = `UPDATE todo SET task = COALESCE ($1, task), start_date = COALESCE ($2, start_date), deadline = COALESCE ($3,deadline) WHERE id = $3 RETURNING *`;
-            const values = [data.task || null, data.start_date || null, data.deadline || null, taskID];
+            const query = `UPDATE todo SET task = COALESCE ($1, task), start_date = COALESCE ($2, start_date), deadline = COALESCE ($3,deadline) WHERE id = $4 RETURNING *`;
+            const values = [data.task || null, data.start_date || null, data.deadline || null, id];
             client.query(query,values)
             .then((result) => {
                 result = result.rows[0];
